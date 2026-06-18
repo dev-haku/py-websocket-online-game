@@ -1,3 +1,4 @@
+const url = "https://py-websocket-online-game.onrender.com";
 let ws = null;
 let ms = "";
 
@@ -6,7 +7,6 @@ function connect() {
         return;
     }
 
-    const url = document.getElementById("urlInputbox").value.trim();
     ws = new WebSocket(url);
 
     document.getElementById("connectResult").textContent = "接続中...";
