@@ -1,48 +1,58 @@
-let flag = false;
 let ws = null;
 let ms = "";
 
-let flag2 = false
-
 function connect() {
-
-    if (flag == true) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
         return;
     }
 
     const url = document.getElementById("urlInputbox").value.trim();
     ws = new WebSocket(url);
-    document.getElementById("connectResult").textContent = "検証中";
+
+    document.getElementById("connectResult").textContent = "接続中...";
 
     ws.onopen = () => {
-        console.log(url);
-        flag = true;
-        document.getElementById("connectResult").textContent = "接続中";
+        console.log("connected:", url);
+        document.getElementById("connectResult").textContent = "接続完了";
         ws.send("hello");
     };
 
     ws.onmessage = (e) => {
-        console.log(e.data);
-        if (flag2 == false) {
-            ms += e.data + ms;
-            flag2 = true
+    console.log(e.data);
+
+    let data = e.data;
+
+    try {
+        const parsed = JSON.parse(e.data);
+
+        if (Array.isArray(parsed)) {
+            data = parsed.join("<br>");
         } else {
-            ms = e.data + "<br>" + ms;
+            data = String(parsed);
         }
-        
-        document.getElementById("ms").innerHTML = ms;
+
+    } catch (err) {
+        data = e.data;
+    }
+
+    ms = data + "<br>" + ms;
+    document.getElementById("ms").innerHTML = ms;
     };
 
-    ws.onerror = (err) => {
-        console.log("error:", err);
-        document.getElementById("connectResult").textContent = "接続失敗"
+    ws.onerror = () => {
+        document.getElementById("connectResult").textContent = "接続失敗";
+    };
+
+    ws.onclose = () => {
+        document.getElementById("connectResult").textContent = "切断";
     };
 }
 
-
 function send() {
-    if (flag == true) {
-        ws.send(document.getElementById("messageInputbox").value);
-        document.getElementById("messageInputbox").value = ""
+    const input = document.getElementById("messageInputbox");
+
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(input.value);
+        input.value = "";
     }
 }
